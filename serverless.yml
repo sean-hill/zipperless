@@ -1,0 +1,37 @@
+service: zipperless
+
+plugins:
+  - serverless-prune-plugin
+
+custom:
+  name: zipperless
+  stage: ${opt:stage, 'development'}
+  prune:
+    automatic: true
+    number: 3
+
+provider:
+  name: aws
+  endpointType: REGIONAL
+  stage: ${self:custom.stage}
+  runtime: nodejs10.x
+  logs:
+    restApi: true
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:*
+      Resource: '*'
+  environment:
+    TZ: 'UTC'
+    NODE_ENV: ${self:custom.stage}
+
+functions:
+  unzipit:
+    name: ${self:custom.stage}-unzipit
+    handler: index.handler
+    events:
+      - http:
+          path: invoke
+          method: GET
+    timeout: 10
