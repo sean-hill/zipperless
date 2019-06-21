@@ -1,6 +1,6 @@
 process.env.AWS_REGION = process.env.AWS_REGION || 'us-east-1'
 
-const fs = require('fs')
+const fs = require('fs-extra')
 const tar = require('tar')
 const childProcess = require('child_process')
 const awsSdk = require('aws-sdk')
@@ -25,7 +25,7 @@ exports.download = async () => {
     .promise()
 
   const zippedFilePath = '/tmp/zipper.zip'
-  fs.writeFileSync(zippedFilePath, response.Body)
+  await fs.writeFile(zippedFilePath, response.Body)
 
   console.timeEnd('download')
   return zippedFilePath
@@ -35,6 +35,8 @@ exports.extract = async zippedFilePath => {
   console.time('extract')
 
   const unzippedPath = '/tmp/zippered'
+  await fs.mkdirp(unzippedPath)
+
   await tar.x({
     file: zippedFilePath,
     cwd: unzippedPath
